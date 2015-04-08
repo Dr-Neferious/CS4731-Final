@@ -39,6 +39,10 @@ public class Level implements LevelInterface
 
     protected static final byte TUBE_SIDE_LEFT = (byte) (10 + 1 * 16);
     protected static final byte TUBE_SIDE_RIGHT = (byte) (11 + 1 * 16);
+    
+    protected static final byte CANNON_BASE = (byte) (14 + 2 * 16);
+    protected static final byte CANNON_HOLDER = (byte) (14 + 1 * 16);
+    protected static final byte CANNON_TOP = (byte) (14 + 0 * 16);
 
     //The level's width and height
     protected int width;
