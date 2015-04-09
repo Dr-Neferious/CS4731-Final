@@ -39,11 +39,21 @@ import dk.itu.mario.res.ResourcesManager;
 			private int []checkPoints;
 			private boolean isCustom;
 
+			private String txtFileToUse = "player.txt";
+
 
 			public LevelSceneTest(GraphicsConfiguration graphicsConfiguration,
 					MarioComponent renderer, long seed, int levelDifficulty, int type,boolean isCustom){
+				this(graphicsConfiguration, renderer, seed, levelDifficulty, type, isCustom, "player.txt");
+
+			}
+
+			public LevelSceneTest(GraphicsConfiguration graphicsConfiguration,
+					MarioComponent renderer, long seed, int levelDifficulty, int type,boolean isCustom, String txtFileToUse){
+
 				super(graphicsConfiguration,renderer,seed,levelDifficulty,type);
 				this.isCustom = isCustom;
+				this.txtFileToUse = txtFileToUse;
 			}
 
 			public void init() {
@@ -61,7 +71,7 @@ import dk.itu.mario.res.ResourcesManager;
 		        	if(isCustom){
 		        		MyLevelGenerator clg = new MyLevelGenerator();
 		        		GamePlay gp = new GamePlay();
-		        		gp = gp.read("player.txt");
+		        		gp = gp.read(txtFileToUse);
 		        		currentLevel = (Level)clg.generateLevel(gp);
 		        		
 		        		//You can use the following commands if you want to benefit from

@@ -52,7 +52,14 @@ public class MarioComponent extends JComponent implements Runnable, KeyListener,
 
 		    private double openTime;
 
-		    public MarioComponent(int width, int height,boolean isCustomized){
+		    private String txtFileToUse;
+
+
+		    public MarioComponent(int width, int height, boolean isCustomized){
+		    	this(width, height, isCustomized, "player.txt");
+		    }
+
+		    public MarioComponent(int width, int height,boolean isCustomized, String txtFileToUse){
 		    	addFocusListener(this);
 		    	addMouseListener(this);
 		    	addKeyListener(this);
@@ -62,6 +69,7 @@ public class MarioComponent extends JComponent implements Runnable, KeyListener,
 		        this.width = width;
 		        this.height = height;
 		        this.isCustom = isCustomized;
+		        this.txtFileToUse = txtFileToUse;
 
 		        Dimension size = new Dimension(width, height);
 		        setPreferredSize(size);
@@ -175,7 +183,7 @@ public class MarioComponent extends JComponent implements Runnable, KeyListener,
 
 		        boolean naiveTiming = true;
 		        if (isCustom)
-		        	toCustomGame();
+		        	toCustomGame(txtFileToUse);
 		        else
 		        toRandomGame();
 
@@ -333,9 +341,9 @@ public class MarioComponent extends JComponent implements Runnable, KeyListener,
 
 		    }
 
-		    public void toCustomGame(){
+		    public void toCustomGame(String txtFileToUse){
 
-		    	randomLevel = new LevelSceneTest(graphicsConfiguration,this,new Random().nextLong(),0,0,true);
+		    	randomLevel = new LevelSceneTest(graphicsConfiguration,this,new Random().nextLong(),0,0,true, txtFileToUse);
 
 		    	Mario.fire = false;
 		    	Mario.large = false;
