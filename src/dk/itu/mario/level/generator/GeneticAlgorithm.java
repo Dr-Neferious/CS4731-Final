@@ -16,6 +16,7 @@ public class GeneticAlgorithm
 	private static final double THRESHOLD = 0.00005;
 	private static final double PROB_CROSSOVER = 0.80;
 	private static final double PROB_MUTATE = 0.50;
+	private static final int MAX_ITERATIONS = 2000;
 	public int interationCount = 0;
 	private double prevError = Double.MAX_VALUE;
 	public Level bestLevel;
@@ -45,7 +46,6 @@ public class GeneticAlgorithm
 		Random rand = new Random();
 		population.sort(new LevelComparator());
 
-		//TODO: write genetic algorithm run sequence
 		while(population.size()<MAX_POPULATION)
 		{
 			Pair<Level, Double> level1 = weightedPick();
@@ -84,7 +84,7 @@ public class GeneticAlgorithm
 	
 	public boolean isDone()
 	{
-		return this.deltaError<THRESHOLD;
+		return this.deltaError<THRESHOLD || this.interationCount>MAX_ITERATIONS;
 	}
 	
 	public static double Fitness(Level level)
