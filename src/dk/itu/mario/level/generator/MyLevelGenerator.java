@@ -13,17 +13,20 @@ public class MyLevelGenerator extends CustomizedLevelGenerator implements LevelG
 
 	public LevelInterface generateLevel(GamePlay playerMetrics)
 	{
-//        GeneticAlgorithm ga = new GeneticAlgorithm(width, height, type, playerMetrics);
-//		while(!ga.isDone())
-//		{
-//			ga.run();
-//			if((ga.interationCount%100)==0)
-//				System.out.println(ga.interationCount);
-//		}
-//		LevelInterface level = ga.bestLevel;
+		int width = 320;
+		int height = 15;
+		
+        GeneticAlgorithm ga = new GeneticAlgorithm(width, height, LevelInterface.TYPE_OVERGROUND, playerMetrics);
+		while(!ga.isDone())
+		{
+			ga.run();
+			if((ga.interationCount%100)==0)
+				System.out.println(ga.interationCount);
+		}
+		LevelInterface level = ga.bestLevel;
 		
 			
-		LevelInterface level = new MyLevel(320,15,new Random().nextLong(),1,LevelInterface.TYPE_OVERGROUND,playerMetrics);
+//		LevelInterface level = new MyLevel(320,15,new Random().nextLong(),1,LevelInterface.TYPE_OVERGROUND,playerMetrics);
 		return level;
 	}
 

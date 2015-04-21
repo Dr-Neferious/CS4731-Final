@@ -55,6 +55,8 @@ public class GeneticAlgorithm
 			if(rand.nextDouble()<=PROB_CROSSOVER)
 			{
 				//TODO: do crossover of level1 and level2
+				System.out.println("Crossover");
+				offspring = crossover(level1.level, level2.level);
 			}
 			else
 			{
@@ -66,6 +68,7 @@ public class GeneticAlgorithm
 			
 			if(rand.nextDouble()<=PROB_MUTATE)
 			{
+				System.out.println("Mutation");
 				//TODO: do mutation of offspring
 			}
 			
@@ -78,7 +81,7 @@ public class GeneticAlgorithm
 		this.deltaError = Math.abs(error-this.prevError);
 		this.prevError = error;
 		population.sort(new LevelComparator());
-		population = (ArrayList<Pair<Level, Double>>) population.subList(0, NORMAL_POPULATION);
+		population = new ArrayList<Pair<Level,Double>>(population.subList(0, NORMAL_POPULATION));
 		this.bestLevel = population.get(0).level;
 	}
 	
@@ -94,6 +97,23 @@ public class GeneticAlgorithm
 		
 		
 		return fitness;
+	}
+	
+	private Level crossover(Level l1, Level l2)
+	{
+		Level ret = l1;
+		Random rand = new Random();
+		int split = rand.nextInt(l1.getWidth());
+		
+		for(int i=split;i<l1.getWidth();i++)
+		{
+			for(int j=0;j<l1.getHeight();j++)
+			{
+				ret.setBlock(i, j, l2.getBlock(i, j));
+			}
+		}
+		
+		return ret;
 	}
 	
 	private static double map(double X, double A, double B, double C, double D)
@@ -115,7 +135,8 @@ public class GeneticAlgorithm
 				return population.get(i);
 			randNum-=population.get(i).fitness;
 		}
-		return null;
+		
+		return population.get(rand.nextInt(population.size()));
 	}
 }
 
