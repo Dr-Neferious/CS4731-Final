@@ -1,26 +1,50 @@
 package dk.itu.mario.level.generator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Random;
 
 import dk.itu.mario.MarioInterface.GamePlay;
+import dk.itu.mario.engine.sprites.SpriteTemplate;
 import dk.itu.mario.level.Level;
 import dk.itu.mario.level.MyLevel;
 
 public class GeneticAlgorithm 
 {
+	//		    Coins Jumps Goombas
+	//Hunter     3    20     5
+	//Collector  35   55     0
+	//Jumper     0    124    0
+	
+	
 	private static final int NORMAL_POPULATION = 10;
 	private static final int MAX_POPULATION = 50;
 	private static final double THRESHOLD = 0.00005;
 	private static final double PROB_CROSSOVER = 0.80;
 	private static final double PROB_MUTATE = 0.50;
-	private static final int MAX_ITERATIONS = 2000;
+	private static final int MAX_ITERATIONS = 5000;
 	public int interationCount = 0;
 	private double prevError = Double.MAX_VALUE;
 	public Level bestLevel;
 	public double deltaError = THRESHOLD;
+	
+	private static final double COINSCALE = 5;
+	private static final double JUMPSCALE = 8;
+	private static final double GOOMBASCALE = 2;
+	
+	private static final double AVG_JUMPS = 60;
+	private static final double AVG_COINS = 10;
+	private static final double AVG_GOOMBA = 2;
+	
+	private static final byte COIN = (byte) (2 + 2 * 16);
+	private static final byte HILL_TOP_LEFT = (byte) (4 + 8 * 16);
+	private static final byte CANNON_TOP = (byte) (14 + 0 * 16);
+	private static final byte TUBE_TOP_LEFT = (byte) (10 + 0 * 16);
+	private static final byte LEFT_GRASS_EDGE = (byte) (0+9*16);
+	
 	
 	private ArrayList<Pair<Level, Double>> population = new ArrayList<Pair<Level, Double>>();
 	private GamePlay model;
@@ -45,17 +69,18 @@ public class GeneticAlgorithm
 		double error = 0;
 		Random rand = new Random();
 		population.sort(new LevelComparator());
-
+		ArrayList<Pair<Level, Double>> populationOld = population;
+		
 		while(population.size()<MAX_POPULATION)
 		{
-			Pair<Level, Double> level1 = weightedPick();
-			Pair<Level, Double> level2 = weightedPick();
+			Pair<Level, Double> level1 = weightedPick(populationOld);
+			Pair<Level, Double> level2 = weightedPick(populationOld);
 			
 			Level offspring = null;
 			if(rand.nextDouble()<=PROB_CROSSOVER)
 			{
 				//TODO: do crossover of level1 and level2
-				System.out.println("Crossover");
+//				System.out.println("Crossover");
 				offspring = crossover(level1.level, level2.level);
 			}
 			else
@@ -68,7 +93,7 @@ public class GeneticAlgorithm
 			
 			if(rand.nextDouble()<=PROB_MUTATE)
 			{
-				System.out.println("Mutation");
+//				System.out.println("Mutation");
 				//TODO: do mutation of offspring
 			}
 			
@@ -83,6 +108,9 @@ public class GeneticAlgorithm
 		population.sort(new LevelComparator());
 		population = new ArrayList<Pair<Level,Double>>(population.subList(0, NORMAL_POPULATION));
 		this.bestLevel = population.get(0).level;
+		System.out.print(Fitness(this.bestLevel));
+		System.out.print(" ");
+		System.out.println(Arrays.toString(countElements(this.bestLevel)));
 	}
 	
 	public boolean isDone()
@@ -90,13 +118,40 @@ public class GeneticAlgorithm
 		return this.deltaError<THRESHOLD || this.interationCount>MAX_ITERATIONS;
 	}
 	
-	public static double Fitness(Level level)
+	public double Fitness(Level level)
 	{
-		double fitness = 0;
-		//TODO: write fitness function and map to 0 - 1
+		int[] counts = countElements(level);
+		int numCoins = counts[0];
+		int numJumps = counts[1];
+		int numGoomba = counts[2];
+		Random rand = new Random();
 		
+		int r = (int)(this.model.coinsCollected*COINSCALE/AVG_COINS);
+		int coinRand = 0;
+		if(r>0)
+			coinRand = rand.nextInt(r);
+		double coinFit = numCoins*1.0/(this.model.coinsCollected+coinRand);
 		
-		return fitness;
+		r = (int)(this.model.jumpsNumber*JUMPSCALE/AVG_JUMPS);
+		coinRand = 0;
+		if(r>0)
+			coinRand = rand.nextInt(r);
+		double jumpFit = numJumps*1.0/(this.model.jumpsNumber+coinRand);
+		
+		r = (int)(this.model.GoombasKilled*GOOMBASCALE/AVG_GOOMBA);
+		coinRand = 0;
+		if(r>0)
+			coinRand = rand.nextInt(r);
+		double goombaFit = numGoomba*1.0/(this.model.GoombasKilled+coinRand);
+
+		if(coinFit>1.0)
+			coinFit = 1.0;
+		if(jumpFit>1.0)
+			jumpFit = 1.0;
+		if(goombaFit>1.0)
+			goombaFit = 1.0;
+		
+		return (coinFit+jumpFit+goombaFit)/3.0;
 	}
 	
 	private Level crossover(Level l1, Level l2)
@@ -110,6 +165,7 @@ public class GeneticAlgorithm
 			for(int j=0;j<l1.getHeight();j++)
 			{
 				ret.setBlock(i, j, l2.getBlock(i, j));
+				ret.setSpriteTemplate(i, j, l2.getSpriteTemplate(i, j));
 			}
 		}
 		
@@ -121,7 +177,7 @@ public class GeneticAlgorithm
 		return (X-A)/(B-A) * (D-C) + C;
 	}
 	
-	private Pair<Level, Double> weightedPick()
+	private Pair<Level, Double> weightedPick(ArrayList<Pair<Level, Double>> population)
 	{
 		Random rand = new Random();
 		double sumOfWeights = 0;
@@ -137,6 +193,32 @@ public class GeneticAlgorithm
 		}
 		
 		return population.get(rand.nextInt(population.size()));
+	}
+	
+	private static int[] countElements(Level level)
+	{
+		//Coins Jumps Goombas
+		int[] ret = {0,0,0};
+		byte[][] map = level.getMap();
+		SpriteTemplate[][] sprites = level.getSpriteTemplate();
+		
+		for(int x=0;x<level.getWidth();x++)
+		{
+			for(int y=0;y<level.getHeight();y++)
+			{
+				if(map[x][y] == COIN)
+					ret[0]++;
+				if(map[x][y] == HILL_TOP_LEFT || map[x][y] == CANNON_TOP || map[x][y] == LEFT_GRASS_EDGE 
+						|| map[x][y] == TUBE_TOP_LEFT)
+					ret[1]++;
+				if(sprites[x][y]!=null && sprites[x][y].type==SpriteTemplate.GOOMPA)
+				{
+					ret[2]++;
+					ret[1]++; //Have to jump over goombas
+				}
+			}
+		}
+		return ret;
 	}
 }
 

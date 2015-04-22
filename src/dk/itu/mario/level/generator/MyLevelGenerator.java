@@ -16,6 +16,10 @@ public class MyLevelGenerator extends CustomizedLevelGenerator implements LevelG
 		int width = 320;
 		int height = 15;
 		
+		System.out.println(playerMetrics.coinsCollected);
+		System.out.println(playerMetrics.jumpsNumber);
+		System.out.println(playerMetrics.GoombasKilled);
+		
         GeneticAlgorithm ga = new GeneticAlgorithm(width, height, LevelInterface.TYPE_OVERGROUND, playerMetrics);
 		while(!ga.isDone())
 		{

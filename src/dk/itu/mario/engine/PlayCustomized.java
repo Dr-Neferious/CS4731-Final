@@ -15,6 +15,7 @@ public class PlayCustomized {
      				txtFileToUse = args[0]+".txt";
      			}
 
+     			System.out.println(txtFileToUse);
 		    	JFrame frame = new JFrame("Mario Experience Showcase");
 		    	MarioComponent mario = new MarioComponent(640, 480,true, txtFileToUse);
 

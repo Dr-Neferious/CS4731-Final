@@ -16,7 +16,6 @@ public class Level implements LevelInterface
     protected static final byte ROCK			= (byte) (9 + 0 * 16);
     protected static final byte COIN			= (byte) (2 + 2 * 16);
 
-
     protected static final byte LEFT_GRASS_EDGE = (byte) (0+9*16);
     protected static final byte RIGHT_GRASS_EDGE = (byte) (2+9*16);
     protected static final byte RIGHT_UP_GRASS_EDGE = (byte) (2+8*16);
