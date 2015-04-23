@@ -23,9 +23,9 @@ public class GeneticAlgorithm
 	private static final int NORMAL_POPULATION = 10;
 	private static final int MAX_POPULATION = 50;
 	private static final double THRESHOLD = 0.00005;
-	private static final double PROB_CROSSOVER = 0.80;
-	private static final double PROB_MUTATE = 0.50;
-	private static final int MAX_ITERATIONS = 5000;
+	private static final double PROB_CROSSOVER = 0.90;
+	private static final double PROB_MUTATE = 0.60;
+	private static final int MAX_ITERATIONS = 7000;
 	public int interationCount = 0;
 	private double prevError = Double.MAX_VALUE;
 	public Level bestLevel;
@@ -44,6 +44,16 @@ public class GeneticAlgorithm
 	private static final byte CANNON_TOP = (byte) (14 + 0 * 16);
 	private static final byte TUBE_TOP_LEFT = (byte) (10 + 0 * 16);
 	private static final byte LEFT_GRASS_EDGE = (byte) (0+9*16);
+	private static final byte HILL_FILL = (byte) (5 + 9 * 16);
+    private static final byte HILL_LEFT = (byte) (4 + 9 * 16);
+    private static final byte HILL_RIGHT = (byte) (6 + 9 * 16);
+    private static final byte HILL_TOP = (byte) (5 + 8 * 16);
+    private static final byte HILL_TOP_RIGHT = (byte) (6 + 8 * 16);
+    private static final byte HILL_TOP_LEFT_IN = (byte) (4 + 11 * 16);
+    private static final byte HILL_TOP_RIGHT_IN = (byte) (6 + 11 * 16);
+    private static final byte TUBE_TOP_RIGHT = (byte) (11 + 0 * 16);
+    private static final byte TUBE_SIDE_LEFT = (byte) (10 + 1 * 16);
+    private static final byte TUBE_SIDE_RIGHT = (byte) (11 + 1 * 16);
 	
 	
 	private ArrayList<Pair<Level, Double>> population = new ArrayList<Pair<Level, Double>>();
@@ -95,6 +105,7 @@ public class GeneticAlgorithm
 			{
 //				System.out.println("Mutation");
 				//TODO: do mutation of offspring
+//				offspring = mutate(offspring);
 			}
 			
 			population.add(new Pair<Level,Double>(offspring, Fitness(offspring)));
@@ -160,16 +171,37 @@ public class GeneticAlgorithm
 		Random rand = new Random();
 		int split = rand.nextInt(l1.getWidth());
 		
+		for(int i=0;i<l1.getHeight();i++)
+		{
+			byte b = l1.getBlock(split, i);
+			if(b == HILL_FILL || b == HILL_LEFT || b == HILL_RIGHT || 
+					b == TUBE_SIDE_LEFT || b == TUBE_SIDE_RIGHT)
+			{
+				return crossover(l1,l2);
+			}
+		}
+		
 		for(int i=split;i<l1.getWidth();i++)
 		{
 			for(int j=0;j<l1.getHeight();j++)
 			{
+				//TODO Check either side of this block and try to change surrounding blocks to create transition
 				ret.setBlock(i, j, l2.getBlock(i, j));
 				ret.setSpriteTemplate(i, j, l2.getSpriteTemplate(i, j));
 			}
 		}
 		
 		return ret;
+	}
+	
+	private Level mutate(Level offspring)
+	{
+		Random rand = new Random();
+		int x = rand.nextInt(offspring.getWidth());
+		int y = rand.nextInt(offspring.getHeight());
+		if(offspring.getBlock(x, y) == 0)
+			offspring.setBlock(x, y, COIN);
+		return offspring;
 	}
 	
 	private static double map(double X, double A, double B, double C, double D)
