@@ -170,16 +170,23 @@ public class GeneticAlgorithm
 		Level ret = l1;
 		Random rand = new Random();
 		int split = rand.nextInt(l1.getWidth());
-		
-		for(int i=0;i<l1.getHeight();i++)
+		boolean redo = false;
+		do
 		{
-			byte b = l1.getBlock(split, i);
-			if(b == HILL_FILL || b == HILL_LEFT || b == HILL_RIGHT || 
-					b == TUBE_SIDE_LEFT || b == TUBE_SIDE_RIGHT)
+			redo = false;
+			split = rand.nextInt(l1.getWidth());
+			
+			for(int i=0;i<l1.getHeight();i++)
 			{
-				return crossover(l1,l2);
+				byte b = l1.getBlock(split, i);
+				if(b == HILL_FILL || b == HILL_LEFT || b == HILL_RIGHT || 
+						b == TUBE_SIDE_LEFT || b == TUBE_SIDE_RIGHT)
+				{
+					redo = true;
+					break;
+				}
 			}
-		}
+		} while(redo);
 		
 		for(int i=split;i<l1.getWidth();i++)
 		{
@@ -191,16 +198,73 @@ public class GeneticAlgorithm
 			}
 		}
 		
+		//TODO Clear end of level and place goal
+		
 		return ret;
 	}
 	
 	private Level mutate(Level offspring)
 	{
 		Random rand = new Random();
-		int x = rand.nextInt(offspring.getWidth());
-		int y = rand.nextInt(offspring.getHeight());
-		if(offspring.getBlock(x, y) == 0)
-			offspring.setBlock(x, y, COIN);
+		int choice = rand.nextInt(8);
+		switch(choice)
+		{
+			//Add coin
+			case(0):
+			{
+				int x = rand.nextInt(offspring.getWidth());
+				int y = rand.nextInt(offspring.getHeight());
+				if(offspring.getBlock(x, y)==0)
+					offspring.setBlock(x, y, COIN);
+				break;
+			}
+			//Remove coin
+			case(1):
+			{
+				
+				break;
+			}
+			//Add Goomba
+			case(2):
+			{
+				int x = rand.nextInt(offspring.getWidth());
+				int y = rand.nextInt(offspring.getHeight());
+				if(offspring.getBlock(x, y)==0)
+					offspring.setSpriteTemplate(x, y, new SpriteTemplate(SpriteTemplate.GOOMPA, false));
+				break;
+			}
+			//Remove Goomba
+			case(3):
+			{
+				
+				break;
+			}
+			//Add Hills
+			case(4):
+			{
+				
+				break;
+			}
+			//Remove Hills
+			case(5):
+			{
+				
+				break;
+			}
+			//Add Pipes
+			case(6):
+			{
+				
+				break;
+			}
+			//Remove Pipes
+			case(7):
+			{
+				
+				break;
+			}
+		}
+				
 		return offspring;
 	}
 	
@@ -268,7 +332,7 @@ class LevelComparator implements Comparator<Object>
 		else if(f<0)
 			return -1;
 		else
-			return 0;
+			return 1;
 	}
 }
 
