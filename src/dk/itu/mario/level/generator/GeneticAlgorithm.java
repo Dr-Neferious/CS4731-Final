@@ -105,7 +105,7 @@ public class GeneticAlgorithm
 			{
 //				System.out.println("Mutation");
 				//TODO: do mutation of offspring
-//				offspring = mutate(offspring);
+				offspring = mutate(offspring);
 			}
 			
 			population.add(new Pair<Level,Double>(offspring, Fitness(offspring)));
@@ -155,12 +155,28 @@ public class GeneticAlgorithm
 			coinRand = rand.nextInt(r);
 		double goombaFit = numGoomba*1.0/(this.model.GoombasKilled+coinRand);
 
-		if(coinFit>1.0)
+		if(coinFit>1.5)
+			coinFit = 1/(coinFit*2);
+		else if(coinFit>1.0)
 			coinFit = 1.0;
-		if(jumpFit>1.0)
+		if(jumpFit>1.5)
+			jumpFit = 1/(jumpFit*2);
+		else if(jumpFit>1.0)
 			jumpFit = 1.0;
-		if(goombaFit>1.0)
+		if(goombaFit>1.5)
+			goombaFit = 1/(goombaFit*2);
+		else if(goombaFit>1.0)
 			goombaFit = 1.0;
+		
+		/*
+		 * if(coinFit>1.0)
+		 * 		coinFit = 1.0;
+		 * if(goombaFit>1.0)
+		 * 		goombaFit = 1.0;
+		 * if(jumpFit>1.0)
+		 * 		jumpFit = 1.0;
+		 * 
+		 */
 		
 		return (coinFit+jumpFit+goombaFit)/3.0;
 	}
