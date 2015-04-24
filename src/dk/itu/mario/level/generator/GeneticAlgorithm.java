@@ -288,7 +288,7 @@ public class GeneticAlgorithm
 			//Add Hills
 			case(4):
 			{
-				
+				// Take a look at myLevel.java build hill straight private function
 				break;
 			}
 			//Remove Hills
@@ -300,7 +300,8 @@ public class GeneticAlgorithm
 			//Add Pipes
 			case(6):
 			{
-				
+				// Pick a random x, y location. Move y down until it hits terrain and place pipe block
+				// Build tubes private function in MyLevel to look at
 				break;
 			}
 			//Remove Pipes
