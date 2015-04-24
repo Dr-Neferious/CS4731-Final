@@ -105,7 +105,7 @@ public class GeneticAlgorithm
 			{
 //				System.out.println("Mutation");
 				//TODO: do mutation of offspring
-				offspring = mutate(offspring);
+//				offspring = mutate(offspring);
 			}
 			
 			population.add(new Pair<Level,Double>(offspring, Fitness(offspring)));
@@ -119,9 +119,9 @@ public class GeneticAlgorithm
 		population.sort(new LevelComparator());
 		population = new ArrayList<Pair<Level,Double>>(population.subList(0, NORMAL_POPULATION));
 		this.bestLevel = population.get(0).level;
-		System.out.print(Fitness(this.bestLevel));
-		System.out.print(" ");
-		System.out.println(Arrays.toString(countElements(this.bestLevel)));
+//		System.out.print(Fitness(this.bestLevel));
+//		System.out.print(" ");
+//		System.out.println(Arrays.toString(countElements(this.bestLevel)));
 	}
 	
 	public boolean isDone()
@@ -177,8 +177,10 @@ public class GeneticAlgorithm
 		 * 		jumpFit = 1.0;
 		 * 
 		 */
-		
-		return (coinFit+jumpFit+goombaFit)/3.0;
+		double fitness = (coinFit+jumpFit+goombaFit)/3.0;
+		if(fitness == Double.NaN || Double.isInfinite(fitness))
+			return 0.0;
+		return fitness;
 	}
 	
 	private Level crossover(Level l1, Level l2)
@@ -332,6 +334,27 @@ public class GeneticAlgorithm
 		}
 		return ret;
 	}
+	
+	private static int[] getRandomCoin(Level level)
+	{
+		ArrayList<int[]> coinsLocations = new ArrayList<int[]>();
+		byte[][] map = level.getMap();
+		
+		for(int x=0;x<level.getWidth();x++)
+		{
+			for(int y=0;y<level.getHeight();y++)
+			{
+				if(map[x][y] == COIN)
+				{
+					int[] t = {x,y};
+					coinsLocations.add(t);
+				}
+			}
+		}
+		
+		Random rand = new Random();
+		return coinsLocations.get(rand.nextInt(coinsLocations.size()));
+	}
 }
 
 class LevelComparator implements Comparator<Object>
@@ -348,7 +371,7 @@ class LevelComparator implements Comparator<Object>
 		else if(f<0)
 			return -1;
 		else
-			return 1;
+			return 0;
 	}
 }
 
