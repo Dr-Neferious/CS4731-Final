@@ -105,7 +105,7 @@ public class GeneticAlgorithm
 			{
 //				System.out.println("Mutation");
 				//TODO: do mutation of offspring
-				offspring = mutate(offspring);
+				//offspring = mutate(offspring);
 			}
 			
 			population.add(new Pair<Level,Double>(offspring, Fitness(offspring)));
@@ -219,6 +219,36 @@ public class GeneticAlgorithm
 		return ret;
 	}
 	
+//	private Level mutate(Level offspring)
+//	{
+//		Random rand = new Random();
+//		boolean found = false;
+//		boolean set = false;
+//		while(!found && !set)
+//		{
+//			int x = rand.nextInt(offspring.getWidth());
+//			int y = rand.nextInt(offspring.getHeight());
+//			if(!found)
+//			{
+//				if(offspring.getBlock(x,y) == COIN)
+//				{
+//					offspring.setBlock(x,y,(byte)0);
+//					found = true;
+//				}
+//			}
+//			else if(!set)
+//			{
+//				if(offspring.getBlock(x,y) == 0)
+//				{
+//					offspring.setBlock(x,y,COIN);
+//					set = true;
+//				}
+//			}
+//		}
+//		return offspring;
+//	}
+	
+	
 	private Level mutate(Level offspring)
 	{
 		Random rand = new Random();
@@ -258,7 +288,7 @@ public class GeneticAlgorithm
 			//Add Hills
 			case(4):
 			{
-				
+				// Take a look at myLevel.java build hill straight private function
 				break;
 			}
 			//Remove Hills
@@ -270,7 +300,8 @@ public class GeneticAlgorithm
 			//Add Pipes
 			case(6):
 			{
-				
+				// Pick a random x, y location. Move y down until it hits terrain and place pipe block
+				// Build tubes private function in MyLevel to look at
 				break;
 			}
 			//Remove Pipes
