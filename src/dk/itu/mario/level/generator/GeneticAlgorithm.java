@@ -3,8 +3,6 @@ package dk.itu.mario.level.generator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
-import java.util.PriorityQueue;
 import java.util.Random;
 
 import dk.itu.mario.MarioInterface.GamePlay;
@@ -25,17 +23,16 @@ public class GeneticAlgorithm
 	private static final double THRESHOLD = 0.00005;
 	private static final double PROB_CROSSOVER = 0.90;
 	private static final double PROB_MUTATE = 0.60;
-	private static final int MAX_ITERATIONS = 7000;
+	private static final int MAX_ITERATIONS = 10000;
 	public int interationCount = 0;
 	private double prevError = Double.MAX_VALUE;
-	public Level bestLevel;
 	public double deltaError = THRESHOLD;
 	
 	private static final double COINSCALE = 5;
 	private static final double JUMPSCALE = 8;
 	private static final double GOOMBASCALE = 2;
 	
-	private static final double AVG_JUMPS = 60;
+	private static final double AVG_JUMPS = 20;
 	private static final double AVG_COINS = 10;
 	private static final double AVG_GOOMBA = 2;
 	
@@ -56,9 +53,10 @@ public class GeneticAlgorithm
     private static final byte TUBE_SIDE_RIGHT = (byte) (11 + 1 * 16);
 	
 	
-	private ArrayList<Pair<Level, Double>> population = new ArrayList<Pair<Level, Double>>();
+	private ArrayList<MyLevel> population = new ArrayList<MyLevel>();
 	private GamePlay model;
 	
+	MyLevel bestLevel = null;
 	
 	public GeneticAlgorithm(int width, int height, int type, GamePlay playerMetrics)
 	{
@@ -68,8 +66,10 @@ public class GeneticAlgorithm
 		//Create initial population
 		for(int i=0;i<NORMAL_POPULATION;i++)
 		{
-			Level level = new MyLevel(width, height, rand.nextLong(), 0, type, playerMetrics);
-			population.add(new Pair<Level, Double>(level, Fitness(level)));
+			MyLevel level = new MyLevel(width, height, rand.nextLong(), 0, type, playerMetrics);
+			level.fitness = Fitness(level);
+			population.add(level);
+			bestLevel = level;
 		}
 	}
 	
@@ -79,36 +79,37 @@ public class GeneticAlgorithm
 		double error = 0;
 		Random rand = new Random();
 		population.sort(new LevelComparator());
-		ArrayList<Pair<Level, Double>> populationOld = population;
+//		ArrayList<Pair<Level, Double>> populationOld = population;
 		
 		while(population.size()<MAX_POPULATION)
 		{
-			Pair<Level, Double> level1 = weightedPick(populationOld);
-			Pair<Level, Double> level2 = weightedPick(populationOld);
+			MyLevel level1 = weightedPick(population);
+			MyLevel level2 = weightedPick(population);
 			
-			Level offspring = null;
+			MyLevel offspring = null;
 			if(rand.nextDouble()<=PROB_CROSSOVER)
 			{
 				//TODO: do crossover of level1 and level2
 //				System.out.println("Crossover");
-				offspring = crossover(level1.level, level2.level);
+				offspring = crossover(level1, level2);
 			}
 			else
 			{
 				if(rand.nextDouble()<=0.5)
-					offspring = level1.level;
+					offspring = level1;
 				else
-					offspring = level2.level;
+					offspring = level2;
 			}
 			
 			if(rand.nextDouble()<=PROB_MUTATE)
 			{
 //				System.out.println("Mutation");
 				//TODO: do mutation of offspring
-//				offspring = mutate(offspring);
+				offspring = mutate(offspring);
 			}
 			
-			population.add(new Pair<Level,Double>(offspring, Fitness(offspring)));
+			offspring.fitness = Fitness(offspring);
+			population.add(offspring);
 		}
 		
 		for(int i=0;i<population.size();i++)
@@ -117,75 +118,98 @@ public class GeneticAlgorithm
 		this.deltaError = Math.abs(error-this.prevError);
 		this.prevError = error;
 		population.sort(new LevelComparator());
-		population = new ArrayList<Pair<Level,Double>>(population.subList(0, NORMAL_POPULATION));
-		this.bestLevel = population.get(0).level;
-//		System.out.print(Fitness(this.bestLevel));
-//		System.out.print(" ");
-//		System.out.println(Arrays.toString(countElements(this.bestLevel)));
+//		System.out.println(population.get(0).fitness + "\t" + population.get(population.size()-1).fitness);
+
+		for(int i=NORMAL_POPULATION;i<population.size()-NORMAL_POPULATION;i++)
+			population.remove(i);
+		
+		System.out.print(population.get(0).fitness);
+		System.out.print(" ");
+		System.out.print(Arrays.toString(countElements(population.get(0))));
+		System.out.print(" ");
+		System.out.println(bestLevel.fitness);
+		System.out.print(" ");
+		System.out.println(Arrays.toString(countElements(bestLevel)));
+		
+		if(population.get(0).fitness>bestLevel.fitness)
+			bestLevel = population.get(0).cloneMyLevel();
+		bestLevel.fitness = Fitness(bestLevel);
 	}
 	
 	public boolean isDone()
 	{
-		return this.deltaError<THRESHOLD || this.interationCount>MAX_ITERATIONS;
+//		return this.deltaError<THRESHOLD || this.interationCount>MAX_ITERATIONS;
+		return this.interationCount>MAX_ITERATIONS;
 	}
 	
-	public double Fitness(Level level)
+	public Level getLevel()
+	{
+		return bestLevel;
+	}
+	
+	public double Fitness(MyLevel level)
 	{
 		int[] counts = countElements(level);
 		int numCoins = counts[0];
 		int numJumps = counts[1];
 		int numGoomba = counts[2];
-		Random rand = new Random();
+//		Random rand = new Random();
 		
 		int r = (int)(this.model.coinsCollected*COINSCALE/AVG_COINS);
-		int coinRand = 0;
-		if(r>0)
-			coinRand = rand.nextInt(r);
-		double coinFit = numCoins*1.0/(this.model.coinsCollected+coinRand);
+//		int coinRand = 0;
+//		if(r>0)
+//			coinRand = rand.nextInt(r);
+		double coinFit = numCoins*1.0/(this.model.coinsCollected);
 		
 		r = (int)(this.model.jumpsNumber*JUMPSCALE/AVG_JUMPS);
-		coinRand = 0;
-		if(r>0)
-			coinRand = rand.nextInt(r);
-		double jumpFit = numJumps*1.0/(this.model.jumpsNumber+coinRand);
+//		coinRand = 0;
+//		if(r>0)
+//			coinRand = rand.nextInt(r);
+		double jumpFit = numJumps*1.0/(this.model.jumpsNumber);
 		
 		r = (int)(this.model.GoombasKilled*GOOMBASCALE/AVG_GOOMBA);
-		coinRand = 0;
-		if(r>0)
-			coinRand = rand.nextInt(r);
-		double goombaFit = numGoomba*1.0/(this.model.GoombasKilled+coinRand);
+//		coinRand = 0;
+//		if(r>0)
+//			coinRand = rand.nextInt(r);
+		double goombaFit = numGoomba*1.0/(this.model.GoombasKilled);
+		
+		if(Double.isNaN(coinFit))
+			coinFit = 0.0;
+		if(Double.isNaN(goombaFit))
+			goombaFit = 0.0;
+		if(Double.isNaN(jumpFit))
+			jumpFit = 0.0;
 
-		if(coinFit>1.5)
+		if(coinFit>2)
+			coinFit = -1;
+		else if(coinFit>1.5)
 			coinFit = 1/(coinFit*2);
 		else if(coinFit>1.0)
 			coinFit = 1.0;
-		if(jumpFit>1.5)
+		
+		if(jumpFit>2)
+			jumpFit = -1;
+		else if(jumpFit>1.5)
 			jumpFit = 1/(jumpFit*2);
 		else if(jumpFit>1.0)
 			jumpFit = 1.0;
-		if(goombaFit>1.5)
+
+		if(goombaFit>3)
+			goombaFit = -1;
+		else if(goombaFit>2)
 			goombaFit = 1/(goombaFit*2);
 		else if(goombaFit>1.0)
 			goombaFit = 1.0;
 		
-		/*
-		 * if(coinFit>1.0)
-		 * 		coinFit = 1.0;
-		 * if(goombaFit>1.0)
-		 * 		goombaFit = 1.0;
-		 * if(jumpFit>1.0)
-		 * 		jumpFit = 1.0;
-		 * 
-		 */
 		double fitness = (coinFit+jumpFit+goombaFit)/3.0;
-		if(fitness == Double.NaN || Double.isInfinite(fitness))
+		if(Double.isNaN(fitness) || Double.isInfinite(fitness))
 			return 0.0;
 		return fitness;
 	}
 	
-	private Level crossover(Level l1, Level l2)
+	private MyLevel crossover(MyLevel l1, MyLevel l2)
 	{
-		Level ret = l1;
+		MyLevel ret = l1;
 		Random rand = new Random();
 		int split = rand.nextInt(l1.getWidth());
 		boolean redo = false;
@@ -221,7 +245,7 @@ public class GeneticAlgorithm
 		return ret;
 	}
 	
-	private Level mutate(Level offspring)
+	private MyLevel mutate(MyLevel offspring)
 	{
 		Random rand = new Random();
 		int choice = rand.nextInt(8);
@@ -232,14 +256,18 @@ public class GeneticAlgorithm
 			{
 				int x = rand.nextInt(offspring.getWidth());
 				int y = rand.nextInt(offspring.getHeight());
-				if(offspring.getBlock(x, y)==0)
-					offspring.setBlock(x, y, COIN);
+				while(offspring.getBlock(x, y)!=0)
+				{
+					x = rand.nextInt(offspring.getWidth());
+					y = rand.nextInt(offspring.getHeight());
+				}
+				offspring.setBlock(x, y, COIN);
 				break;
 			}
 			//Remove coin
 			case(1):
 			{
-				
+				removeRandomCoin(offspring);
 				break;
 			}
 			//Add Goomba
@@ -254,7 +282,7 @@ public class GeneticAlgorithm
 			//Remove Goomba
 			case(3):
 			{
-				
+				removeRandomGoomba(offspring);
 				break;
 			}
 			//Add Hills
@@ -281,6 +309,8 @@ public class GeneticAlgorithm
 				
 				break;
 			}
+			default:
+				break;
 		}
 				
 		return offspring;
@@ -291,7 +321,7 @@ public class GeneticAlgorithm
 		return (X-A)/(B-A) * (D-C) + C;
 	}
 	
-	private Pair<Level, Double> weightedPick(ArrayList<Pair<Level, Double>> population)
+	private MyLevel weightedPick(ArrayList<MyLevel> population)
 	{
 		Random rand = new Random();
 		double sumOfWeights = 0;
@@ -335,7 +365,7 @@ public class GeneticAlgorithm
 		return ret;
 	}
 	
-	private static int[] getRandomCoin(Level level)
+	private static void removeRandomCoin(Level level)
 	{
 		ArrayList<int[]> coinsLocations = new ArrayList<int[]>();
 		byte[][] map = level.getMap();
@@ -353,35 +383,61 @@ public class GeneticAlgorithm
 		}
 		
 		Random rand = new Random();
-		return coinsLocations.get(rand.nextInt(coinsLocations.size()));
+		if(coinsLocations.isEmpty())
+			return;
+		int[] loc = coinsLocations.get(rand.nextInt(coinsLocations.size()));
+		level.setBlock(loc[0], loc[1], (byte)0);
 	}
-}
-
-class LevelComparator implements Comparator<Object>
-{
-	@SuppressWarnings("unchecked")
-	@Override
-	public int compare(Object arg0, Object arg1)
+	
+	private static void removeRandomGoomba(Level level)
 	{
-		Pair<Level,Double> o1 = (Pair<Level,Double>)arg0;
-		Pair<Level,Double> o2 = (Pair<Level,Double>)arg1;
-		double f = o1.fitness-o2.fitness;
-		if(f>0)
-			return 1;
-		else if(f<0)
-			return -1;
-		else
-			return 0;
+		ArrayList<int[]> goombaLocations = new ArrayList<int[]>();
+		SpriteTemplate[][] sprites = level.getSpriteTemplate();
+		
+		for(int x=0;x<level.getWidth();x++)
+		{
+			for(int y=0;y<level.getHeight();y++)
+			{
+				if(sprites[x][y] != null && sprites[x][y].type == SpriteTemplate.GOOMPA)
+				{
+					int[] t = {x,y};
+					goombaLocations.add(t);
+				}
+			}
+		}
+		
+		Random rand = new Random();
+		if(goombaLocations.isEmpty())
+			return;
+		int[] loc = goombaLocations.get(rand.nextInt(goombaLocations.size()));
+		level.setSpriteTemplate(loc[0], loc[1], null);
 	}
+
 }
 
 class Pair<A, B>
 {
-	A level;
-	B fitness;
+	public A level;
+	public B fitness;
 	public Pair(A level, B fitness)
 	{
 		this.level = level;
 		this.fitness = fitness;
 	}
 }
+
+class LevelComparator implements Comparator<MyLevel>
+{
+	public int compare(MyLevel arg0, MyLevel arg1)
+	{
+		double f = arg0.fitness-arg1.fitness;
+		if(f>0)
+			return -1;
+		else if(f<0)
+			return 1;
+		else
+			return 0;
+	}
+}
+
+

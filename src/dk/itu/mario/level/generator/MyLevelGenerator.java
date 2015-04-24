@@ -27,7 +27,7 @@ public class MyLevelGenerator extends CustomizedLevelGenerator implements LevelG
 			if((ga.interationCount%100)==0)
 				System.out.println(ga.interationCount);
 		}
-		LevelInterface level = ga.bestLevel;
+		LevelInterface level = ga.getLevel();
 		
 			
 //		LevelInterface level = new MyLevel(320,15,new Random().nextLong(),1,LevelInterface.TYPE_OVERGROUND,playerMetrics);

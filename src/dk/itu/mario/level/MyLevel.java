@@ -16,6 +16,7 @@ public class MyLevel extends Level{
 	 public   int BLOCKS_COINS = 0; // the number of coin blocks
 	 public   int BLOCKS_POWER = 0; // the number of power blocks
 	 public   int COINS = 0; //These are the coins in boxes that Mario collect
+	 public double fitness = 0.0;
 
  
 	private static Random levelSeedRandom = new Random();
@@ -649,6 +650,30 @@ public class MyLevel extends Level{
 	        return clone;
 
 	      }
+	    
+	    public MyLevel cloneMyLevel(){
 
+	    	MyLevel clone=new MyLevel(width, height);
+
+	    	clone.xExit = xExit;
+	    	clone.yExit = yExit;
+	    	byte[][] map = getMap();
+	    	SpriteTemplate[][] st = getSpriteTemplate();
+	    	
+	    	for (int i = 0; i < map.length; i++)
+	    		for (int j = 0; j < map[i].length; j++) {
+	    			clone.setBlock(i, j, map[i][j]);
+	    			clone.setSpriteTemplate(i, j, st[i][j]);
+	    	}
+	    	clone.BLOCKS_COINS = BLOCKS_COINS;
+	    	clone.BLOCKS_EMPTY = BLOCKS_EMPTY;
+	    	clone.BLOCKS_POWER = BLOCKS_POWER;
+	    	clone.ENEMIES = ENEMIES;
+	    	clone.COINS = COINS;
+	    	
+	        return clone;
+
+	      }
+	    
 
 }
