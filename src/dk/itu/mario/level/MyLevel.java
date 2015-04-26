@@ -26,7 +26,7 @@ public class MyLevel extends Level{
 
   
 	    private int difficulty;
-	    private int type;
+	    public int type;
 		private int gaps;
 		
 		public MyLevel(int width, int height)

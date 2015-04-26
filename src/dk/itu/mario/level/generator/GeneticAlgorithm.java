@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.Random;
 
 import dk.itu.mario.MarioInterface.GamePlay;
+import dk.itu.mario.MarioInterface.LevelInterface;
 import dk.itu.mario.engine.sprites.SpriteTemplate;
 import dk.itu.mario.level.Level;
 import dk.itu.mario.level.MyLevel;
@@ -328,8 +329,12 @@ public class GeneticAlgorithm
 			case(4):
 			{
 				// Take a look at myLevel.java build hill straight private function
-				//int x = rand.nextInt(offspring.getWidth());
-				//offspring = buildHillStraight(x, 10, offspring);
+//				int chance = rand.nextInt(100);
+//				if(chance == 0)
+//				{
+//					int x = rand.nextInt(offspring.getWidth());
+//					offspring = buildHillStraight(x, 10, offspring);
+//				}
 				break;
 			}
 			//Remove Hills
@@ -358,7 +363,7 @@ public class GeneticAlgorithm
 		return offspring;
 	}
 	
-	private Level buildHillStraight(int xo, int maxLength, Level level)
+	private MyLevel buildHillStraight(int xo, int maxLength, MyLevel level)
     {
 		Random random = new Random();
         int length = random.nextInt(10) + 10;
