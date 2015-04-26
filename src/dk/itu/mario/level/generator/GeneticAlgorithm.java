@@ -36,6 +36,7 @@ public class GeneticAlgorithm
 	private static final double AVG_COINS = 10;
 	private static final double AVG_GOOMBA = 2;
 	
+    private static final byte GROUND = (byte) (1 + 9 * 16);
 	private static final byte COIN = (byte) (2 + 2 * 16);
 	private static final byte HILL_TOP_LEFT = (byte) (4 + 8 * 16);
 	private static final byte CANNON_TOP = (byte) (14 + 0 * 16);
@@ -289,6 +290,8 @@ public class GeneticAlgorithm
 			case(4):
 			{
 				// Take a look at myLevel.java build hill straight private function
+				//int x = rand.nextInt(offspring.getWidth());
+				//offspring = buildHillStraight(x, 10, offspring);
 				break;
 			}
 			//Remove Hills
@@ -316,6 +319,90 @@ public class GeneticAlgorithm
 				
 		return offspring;
 	}
+	
+	private Level buildHillStraight(int xo, int maxLength, Level level)
+    {
+		Random random = new Random();
+        int length = random.nextInt(10) + 10;
+        if (length > maxLength) length = maxLength;
+
+        int floor = level.getHeight() - 1 - random.nextInt(4);
+        for (int x = xo; x < xo + length; x++)
+        {
+            for (int y = 0; y < level.getHeight(); y++)
+            {
+                if (y >= floor)
+                {
+                    level.setBlock(x, y, GROUND);
+                }
+            }
+        }
+
+        //level.addEnemyLine(xo + 1, xo + length - 1, floor - 1);
+
+        int h = floor;
+
+        boolean keepGoing = true;
+
+        boolean[] occupied = new boolean[length];
+        while (keepGoing)
+        {
+            h = h - 2 - random.nextInt(3);
+
+            if (h <= 0)
+            {
+                keepGoing = false;
+            }
+            else
+            {
+                int l = random.nextInt(5) + 3;
+                int xxo = random.nextInt(length - l - 2) + xo + 1;
+
+                if (occupied[xxo - xo] || occupied[xxo - xo + l] || occupied[xxo - xo - 1] || occupied[xxo - xo + l + 1])
+                {
+                    keepGoing = false;
+                }
+                else
+                {
+                    occupied[xxo - xo] = true;
+                    occupied[xxo - xo + l] = true;
+                    //addEnemyLine(xxo, xxo + l, h - 1);
+                    if (random.nextInt(4) == 0)
+                    {
+                        //decorate(xxo - 1, xxo + l + 1, h);
+                        keepGoing = false;
+                    }
+                    for (int x = xxo; x < xxo + l; x++)
+                    {
+                        for (int y = h; y < floor; y++)
+                        {
+                            int xx = 5;
+                            if (x == xxo) xx = 4;
+                            if (x == xxo + l - 1) xx = 6;
+                            int yy = 9;
+                            if (y == h) yy = 8;
+
+                            if (level.getBlock(x, y) == 0)
+                            {
+                                level.setBlock(x, y, (byte) (xx + yy * 16));
+                            }
+                            else
+                            {
+                                if (level.getBlock(x, y) == HILL_TOP_LEFT) level.setBlock(x, y, HILL_TOP_LEFT_IN);
+                                if (level.getBlock(x, y) == HILL_TOP_RIGHT) level.setBlock(x, y, HILL_TOP_RIGHT_IN);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+       return level; // return length;
+    }
+
+	
+	
+	
 	
 	private static double map(double X, double A, double B, double C, double D)
 	{
