@@ -52,7 +52,18 @@ public class GeneticAlgorithm
     private static final byte TUBE_TOP_RIGHT = (byte) (11 + 0 * 16);
     private static final byte TUBE_SIDE_LEFT = (byte) (10 + 1 * 16);
     private static final byte TUBE_SIDE_RIGHT = (byte) (11 + 1 * 16);
-	
+    private static final byte RIGHT_GRASS_EDGE = (byte) (2+9*16);
+    private static final byte GRASS = (byte) (1+8*16);
+    private static final byte RIGHT_UP_GRASS_EDGE = (byte) (2+8*16);
+    private static final byte LEFT_UP_GRASS_EDGE = (byte) (0+8*16);
+    private static final byte LEFT_POCKET_GRASS = (byte) (3+9*16);
+    private static final byte RIGHT_POCKET_GRASS = (byte) (3+8*16);
+    private static final byte BLUE_GOAL_TOP = (byte) (12+4*16);
+    private static final byte BLUE_GOAL = (byte) (12+5*16);
+    private static final byte PURPLE_GOAL_TOP = (byte) (13+4*16);
+    private static final byte PURPLE_GOAL = (byte) (13+5*16);
+    private static final byte GOAL_BAR = (byte) (13+3*16);
+    private static final byte GOAL_BAR_END = (byte) (12+3*16);
 	
 	private ArrayList<MyLevel> population = new ArrayList<MyLevel>();
 	private GamePlay model;
@@ -80,7 +91,6 @@ public class GeneticAlgorithm
 		double error = 0;
 		Random rand = new Random();
 		population.sort(new LevelComparator());
-//		ArrayList<Pair<Level, Double>> populationOld = population;
 		
 		while(population.size()<MAX_POPULATION)
 		{
@@ -90,8 +100,6 @@ public class GeneticAlgorithm
 			MyLevel offspring = null;
 			if(rand.nextDouble()<=PROB_CROSSOVER)
 			{
-				//TODO: do crossover of level1 and level2
-//				System.out.println("Crossover");
 				offspring = crossover(level1, level2);
 			}
 			else
@@ -104,8 +112,6 @@ public class GeneticAlgorithm
 			
 			if(rand.nextDouble()<=PROB_MUTATE)
 			{
-//				System.out.println("Mutation");
-				//TODO: do mutation of offspring
 				offspring = mutate(offspring);
 			}
 			
@@ -119,16 +125,15 @@ public class GeneticAlgorithm
 		this.deltaError = Math.abs(error-this.prevError);
 		this.prevError = error;
 		population.sort(new LevelComparator());
-//		System.out.println(population.get(0).fitness + "\t" + population.get(population.size()-1).fitness);
 
 		for(int i=NORMAL_POPULATION;i<population.size()-NORMAL_POPULATION;i++)
 			population.remove(i);
 		
-		System.out.print(population.get(0).fitness);
-		System.out.print(" ");
-		System.out.print(Arrays.toString(countElements(population.get(0))));
-		System.out.print(" ");
-		System.out.println(bestLevel.fitness);
+//		System.out.print(population.get(0).fitness);
+//		System.out.print(" ");
+//		System.out.print(Arrays.toString(countElements(population.get(0))));
+//		System.out.print(" ");
+		System.out.print(bestLevel.fitness);
 		System.out.print(" ");
 		System.out.println(Arrays.toString(countElements(bestLevel)));
 		
@@ -228,6 +233,14 @@ public class GeneticAlgorithm
 					redo = true;
 					break;
 				}
+				
+				b = l2.getBlock(split, i);
+				if(b == HILL_FILL || b == HILL_LEFT || b == HILL_RIGHT || 
+						b == TUBE_SIDE_LEFT || b == TUBE_SIDE_RIGHT)
+				{
+					redo = true;
+					break;
+				}
 			}
 		} while(redo);
 		
@@ -235,14 +248,39 @@ public class GeneticAlgorithm
 		{
 			for(int j=0;j<l1.getHeight();j++)
 			{
-				//TODO Check either side of this block and try to change surrounding blocks to create transition
-				ret.setBlock(i, j, l2.getBlock(i, j));
+				byte block = l2.getBlock(i, j);
+				
+				if(block == GOAL_BAR || block == GOAL_BAR_END || block == PURPLE_GOAL || block == PURPLE_GOAL_TOP || block == BLUE_GOAL || block == BLUE_GOAL_TOP)
+				{
+					ret.setBlock(i, j, (byte)0);
+					continue;
+				}
+				
+				if(i > 0 && i < l1.getWidth()-1)
+					if(l2.getBlock(i+1, j)==0 && l1.getBlock(i-1, j)==0)
+						ret.setBlock(i, j, (byte)0);
+					else if((block == GROUND || block == LEFT_POCKET_GRASS || block == RIGHT_POCKET_GRASS) && l2.getBlock(i, j-1)==0)
+						ret.setBlock(i, j, GRASS);
+					else if(l2.getBlock(i+1, j) == 0)
+						if(block == GROUND)
+							ret.setBlock(i, j, RIGHT_GRASS_EDGE);
+						else if(block == GRASS)
+							ret.setBlock(i, j, RIGHT_UP_GRASS_EDGE);
+						else
+							ret.setBlock(i, j, block);
+					else if(l1.getBlock(i-1, j) == 0)
+						if(block == GROUND)
+							ret.setBlock(i, j, LEFT_GRASS_EDGE);
+						else if(block == GRASS)
+							ret.setBlock(i, j, LEFT_UP_GRASS_EDGE);
+						else
+							ret.setBlock(i, j, block);
+					else
+						ret.setBlock(i, j, block);
+				
 				ret.setSpriteTemplate(i, j, l2.getSpriteTemplate(i, j));
 			}
 		}
-		
-		//TODO Clear end of level and place goal
-		
 		return ret;
 	}
 	

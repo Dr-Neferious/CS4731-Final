@@ -165,6 +165,7 @@ public class MarioComponent extends JComponent implements Runnable, KeyListener,
 		        graphicsConfiguration = getGraphicsConfiguration();
 
 		        Art.init(graphicsConfiguration, sound);
+		        Art.stopMusic();
 
 		        VolatileImage image = createVolatileImage(320, 240);
 		        Graphics g = getGraphics();
@@ -227,7 +228,7 @@ public class MarioComponent extends JComponent implements Runnable, KeyListener,
 		            }
 
 		            float alpha = (float) (now * TICKS_PER_SECOND - tick);
-		            sound.clientTick(alpha);
+//		            sound.clientTick(alpha);
 
 		            int x = (int) (Math.sin(now) * 16 + 160);
 		            int y = (int) (Math.cos(now) * 16 + 120);
