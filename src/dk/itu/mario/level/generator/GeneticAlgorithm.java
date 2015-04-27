@@ -358,8 +358,6 @@ public class GeneticAlgorithm
 			//Add Pipes
 			case(6):
 			{
-				// Pick a random x, y location. Move y down until it hits terrain and place pipe block
-				// Build tubes private function in MyLevel to look at
 				boolean test = false;
 				int count = 0;
 				do
@@ -376,7 +374,7 @@ public class GeneticAlgorithm
 			//Remove Pipes
 			case(7):
 			{
-				
+				removeRandomPipe(offspring);
 				break;
 			}
 			default:
@@ -489,19 +487,6 @@ public class GeneticAlgorithm
 	private MyLevel weightedPick(ArrayList<MyLevel> population)
 	{
 		Random rand = new Random();
-//		double sumOfWeights = 0;
-//		for(int i=0;i<population.size();i++)
-//			sumOfWeights+=population.get(i).fitness;
-//		
-//		double randNum = rand.nextDouble()*sumOfWeights;
-//		for(int i=0;i<population.size();i++)
-//		{
-//			if(randNum < population.get(i).fitness)
-//				return population.get(i);
-//			randNum-=population.get(i).fitness;
-//		}
-//		
-//		return population.get(rand.nextInt(population.size()));
 		
 		double t = rand.nextDouble();
 		for(int i=49;i>=0;i--)
@@ -611,18 +596,40 @@ public class GeneticAlgorithm
 		
         return true;
     }
-
-}
-
-class Pair<A, B>
-{
-	public A level;
-	public B fitness;
-	public Pair(A level, B fitness)
+	
+	private boolean removeRandomPipe(MyLevel level)
 	{
-		this.level = level;
-		this.fitness = fitness;
+		Random rand = new Random();
+		ArrayList<int[]> pipeLocations = new ArrayList<int[]>();
+		for(int x=0;x<level.getWidth();x++)
+		{
+			for(int y=0;y<level.getHeight();y++)
+			{
+				if(level.getBlock(x, y) == TUBE_TOP_LEFT)
+				{
+					int[] t = {x,y};
+					pipeLocations.add(t);
+				}
+			}
+		}
+		if(pipeLocations.size() == 0)
+			return false;
+		int ind = rand.nextInt(pipeLocations.size());
+		int x = pipeLocations.get(ind)[0];
+		int y = pipeLocations.get(ind)[1];
+		
+		for(int i=0;i<6;i++)
+		{
+			for(int j=0;j<2;j++)
+			{
+				if(level.getBlock(x+j, y+i)==GRASS || level.getBlock(x+j, y+i)==GROUND)
+					continue;
+				level.setBlock(x+j, y+i, (byte)0);
+			}
+		}
+		return true;
 	}
+
 }
 
 class LevelComparator implements Comparator<MyLevel>
