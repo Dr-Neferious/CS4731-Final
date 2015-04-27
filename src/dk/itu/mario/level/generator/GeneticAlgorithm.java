@@ -7,6 +7,7 @@ import java.util.Random;
 
 import dk.itu.mario.MarioInterface.GamePlay;
 import dk.itu.mario.MarioInterface.LevelInterface;
+import dk.itu.mario.engine.sprites.Enemy;
 import dk.itu.mario.engine.sprites.SpriteTemplate;
 import dk.itu.mario.level.Level;
 import dk.itu.mario.level.MyLevel;
@@ -97,6 +98,7 @@ public class GeneticAlgorithm
 		{
 			MyLevel level1 = weightedPick(population);
 			MyLevel level2 = weightedPick(population);
+//			System.out.println(level1.fitness + " " + level2.fitness);
 			
 			MyLevel offspring = null;
 			if(rand.nextDouble()<=PROB_CROSSOVER)
@@ -126,17 +128,20 @@ public class GeneticAlgorithm
 		this.deltaError = Math.abs(error-this.prevError);
 		this.prevError = error;
 		population.sort(new LevelComparator());
-
+		
 		for(int i=NORMAL_POPULATION;i<population.size()-NORMAL_POPULATION;i++)
 			population.remove(i);
 		
+//		population.trimToSize();
+//		System.out.println(population.get(0).fitness + " " + population.get(population.size()-1).fitness);
+//		population.add(bestLevel);
 //		System.out.print(population.get(0).fitness);
 //		System.out.print(" ");
 //		System.out.print(Arrays.toString(countElements(population.get(0))));
 //		System.out.print(" ");
-		System.out.print(bestLevel.fitness);
-		System.out.print(" ");
-		System.out.println(Arrays.toString(countElements(bestLevel)));
+//		System.out.print(bestLevel.fitness);
+//		System.out.print(" ");
+//		System.out.println(Arrays.toString(countElements(bestLevel)));
 		
 		if(population.get(0).fitness>bestLevel.fitness)
 			bestLevel = population.get(0).cloneMyLevel();
@@ -151,6 +156,9 @@ public class GeneticAlgorithm
 	
 	public Level getLevel()
 	{
+		System.out.print(bestLevel.fitness);
+		System.out.print(" ");
+		System.out.println(Arrays.toString(countElements(bestLevel)));
 		return bestLevel;
 	}
 	
@@ -352,6 +360,17 @@ public class GeneticAlgorithm
 			{
 				// Pick a random x, y location. Move y down until it hits terrain and place pipe block
 				// Build tubes private function in MyLevel to look at
+				boolean test = false;
+				int count = 0;
+				do
+				{
+					int x = rand.nextInt(offspring.getWidth());
+					int y = rand.nextInt(offspring.getHeight());
+					if(offspring.getBlock(x, y) == GRASS)
+						test = buildTubes(x, y-1, offspring);
+					count++;
+					if(count > 100) break;
+				} while(!test);
 				break;
 			}
 			//Remove Pipes
@@ -470,19 +489,29 @@ public class GeneticAlgorithm
 	private MyLevel weightedPick(ArrayList<MyLevel> population)
 	{
 		Random rand = new Random();
-		double sumOfWeights = 0;
-		for(int i=0;i<population.size();i++)
-			sumOfWeights+=population.get(i).fitness;
+//		double sumOfWeights = 0;
+//		for(int i=0;i<population.size();i++)
+//			sumOfWeights+=population.get(i).fitness;
+//		
+//		double randNum = rand.nextDouble()*sumOfWeights;
+//		for(int i=0;i<population.size();i++)
+//		{
+//			if(randNum < population.get(i).fitness)
+//				return population.get(i);
+//			randNum-=population.get(i).fitness;
+//		}
+//		
+//		return population.get(rand.nextInt(population.size()));
 		
-		double randNum = rand.nextDouble()*sumOfWeights;
-		for(int i=0;i<population.size();i++)
+		double t = rand.nextDouble();
+		for(int i=49;i>=0;i--)
 		{
-			if(randNum < population.get(i).fitness)
+			if(t <= 1.0/(Math.pow(2, i)))
+			{
 				return population.get(i);
-			randNum-=population.get(i).fitness;
+			}
 		}
-		
-		return population.get(rand.nextInt(population.size()));
+		return population.get(0);
 	}
 	
 	private static int[] countElements(Level level)
@@ -558,6 +587,30 @@ public class GeneticAlgorithm
 		int[] loc = goombaLocations.get(rand.nextInt(goombaLocations.size()));
 		level.setSpriteTemplate(loc[0], loc[1], null);
 	}
+	
+	private boolean buildTubes(int x, int y, MyLevel level)
+    {
+		Random rand = new Random();
+		int pipeHeight = 2 + rand.nextInt(3);
+		for(int i=0;i<pipeHeight;i++)
+		{
+			for(int j=0;j<2;j++)
+			{
+				if(level.getBlock(x+j, y-i) != (byte)0)
+					return false;
+			}
+		}
+		
+		for(int i=0;i<pipeHeight-1;i++)
+		{
+			level.setBlock(x, y-i, TUBE_SIDE_LEFT);
+			level.setBlock(x+1, y-i, TUBE_SIDE_RIGHT);
+		}
+		level.setBlock(x, y-pipeHeight+1, TUBE_TOP_LEFT);
+		level.setBlock(x+1, y-pipeHeight+1, TUBE_TOP_RIGHT);
+		
+        return true;
+    }
 
 }
 
