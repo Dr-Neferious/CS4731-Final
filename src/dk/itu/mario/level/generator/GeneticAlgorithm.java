@@ -301,6 +301,7 @@ public class GeneticAlgorithm
 					x = rand.nextInt(offspring.getWidth());
 					y = rand.nextInt(offspring.getHeight());
 				}
+				y = findReasonableHeight(offspring, x, y);
 				offspring.setBlock(x, y, COIN);
 				break;
 			}
@@ -316,7 +317,10 @@ public class GeneticAlgorithm
 				int x = rand.nextInt(offspring.getWidth());
 				int y = rand.nextInt(offspring.getHeight());
 				if(offspring.getBlock(x, y)==0)
+				{	
+					y = findReasonableHeight(offspring, x, y);
 					offspring.setSpriteTemplate(x, y, new SpriteTemplate(SpriteTemplate.GOOMPA, false));
+				}
 				break;
 			}
 			//Remove Goomba
@@ -362,6 +366,17 @@ public class GeneticAlgorithm
 				
 		return offspring;
 	}
+	
+	
+	private int findReasonableHeight(MyLevel level, int x, int y)
+	{
+		Random rand = new Random();
+		int yy = y;
+		int h = level.getHeight();
+		while(level.getBlock(x, yy) == 0 && yy++ < h);
+		return ((yy-1) - rand.nextInt(5));
+	}
+	
 	
 	private MyLevel buildHillStraight(int xo, int maxLength, MyLevel level)
     {
