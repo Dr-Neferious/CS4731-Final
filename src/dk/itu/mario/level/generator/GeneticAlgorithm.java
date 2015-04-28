@@ -321,7 +321,6 @@ public class GeneticAlgorithm
 				if(chance == 0)
 				{
 					int x = rand.nextInt(offspring.getWidth());
-					//int range = 7 + rand.nextInt(13);
 					offspring = buildHillStraight(x, 20, offspring);
 				}
 				break;
@@ -499,7 +498,10 @@ public class GeneticAlgorithm
 		int maxHeight = 15;
 		while(height < maxHeight)
 		{
-			if(level.getBlock(x, y+height+1) == GRASS)
+			if(level.getBlock(x, y+height+1) == GRASS ||
+					level.getBlock(x, y+height+1) == HILL_TOP_LEFT ||
+					level.getBlock(x, y+height+1) == HILL_TOP_RIGHT ||
+					level.getBlock(x, y+height+1) == HILL_TOP)
 			{
 				height++;
 				break;
@@ -523,7 +525,7 @@ public class GeneticAlgorithm
 			}
 		}
 		
-		System.out.println("Success!");
+		//System.out.println("Success!");
 		return level;
 	}
 	
