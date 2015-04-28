@@ -6,8 +6,6 @@ import java.util.Comparator;
 import java.util.Random;
 
 import dk.itu.mario.MarioInterface.GamePlay;
-import dk.itu.mario.MarioInterface.LevelInterface;
-import dk.itu.mario.engine.sprites.Enemy;
 import dk.itu.mario.engine.sprites.SpriteTemplate;
 import dk.itu.mario.level.Level;
 import dk.itu.mario.level.MyLevel;
@@ -29,14 +27,6 @@ public class GeneticAlgorithm
 	public int interationCount = 0;
 	private double prevError = Double.MAX_VALUE;
 	public double deltaError = THRESHOLD;
-	
-	private static final double COINSCALE = 5;
-	private static final double JUMPSCALE = 8;
-	private static final double GOOMBASCALE = 2;
-	
-	private static final double AVG_JUMPS = 20;
-	private static final double AVG_COINS = 10;
-	private static final double AVG_GOOMBA = 2;
 	
     private static final byte GROUND = (byte) (1 + 9 * 16);
 	private static final byte COIN = (byte) (2 + 2 * 16);
@@ -99,7 +89,6 @@ public class GeneticAlgorithm
 		{
 			MyLevel level1 = weightedPick(population);
 			MyLevel level2 = weightedPick(population);
-//			System.out.println(level1.fitness + " " + level2.fitness);
 			
 			MyLevel offspring = null;
 			if(rand.nextDouble()<=PROB_CROSSOVER)
@@ -169,24 +158,9 @@ public class GeneticAlgorithm
 		int numCoins = counts[0];
 		int numJumps = counts[1];
 		int numGoomba = counts[2];
-//		Random rand = new Random();
 		
-		int r = (int)(this.model.coinsCollected*COINSCALE/AVG_COINS);
-//		int coinRand = 0;
-//		if(r>0)
-//			coinRand = rand.nextInt(r);
 		double coinFit = numCoins*1.0/(this.model.coinsCollected);
-		
-		r = (int)(this.model.jumpsNumber*JUMPSCALE/AVG_JUMPS);
-//		coinRand = 0;
-//		if(r>0)
-//			coinRand = rand.nextInt(r);
 		double jumpFit = numJumps*1.0/(this.model.jumpsNumber);
-		
-		r = (int)(this.model.GoombasKilled*GOOMBASCALE/AVG_GOOMBA);
-//		coinRand = 0;
-//		if(r>0)
-//			coinRand = rand.nextInt(r);
 		double goombaFit = numGoomba*1.0/(this.model.GoombasKilled);
 		
 		// Fitness adjustments.
@@ -388,7 +362,6 @@ public class GeneticAlgorithm
 		return offspring;
 	}
 	
-	
 	private int findReasonableHeight(MyLevel level, int x, int y, int range)
 	{
 		Random rand = new Random();
@@ -397,7 +370,6 @@ public class GeneticAlgorithm
 		while(level.getBlock(x, yy) == 0 && yy++ < h);
 		return ((yy-1) - rand.nextInt(range));
 	}
-	
 	
 	private MyLevel buildHillStraight(int xo, int maxLength, MyLevel level)
     {
@@ -553,13 +525,6 @@ public class GeneticAlgorithm
 		
 		System.out.println("Success!");
 		return level;
-	}
-	
-	
-	
-	private static double map(double X, double A, double B, double C, double D)
-	{
-		return (X-A)/(B-A) * (D-C) + C;
 	}
 	
 	private MyLevel weightedPick(ArrayList<MyLevel> population)
