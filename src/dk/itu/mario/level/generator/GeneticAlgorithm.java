@@ -69,6 +69,7 @@ public class GeneticAlgorithm
 	
 	private ArrayList<MyLevel> population = new ArrayList<MyLevel>();
 	private GamePlay model;
+	private Random globalRand;
 	
 	MyLevel bestLevel = null;
 	
@@ -76,7 +77,7 @@ public class GeneticAlgorithm
 	{
 		this.model = playerMetrics;
 		Random rand = new Random();
-		
+		globalRand = new Random();
 		//Create initial population
 		for(int i=0;i<NORMAL_POPULATION;i++)
 		{
@@ -188,6 +189,7 @@ public class GeneticAlgorithm
 //			coinRand = rand.nextInt(r);
 		double goombaFit = numGoomba*1.0/(this.model.GoombasKilled);
 		
+		// Fitness adjustments.
 		if(Double.isNaN(coinFit))
 			coinFit = 0.0;
 		if(Double.isNaN(goombaFit))
@@ -309,7 +311,7 @@ public class GeneticAlgorithm
 					x = rand.nextInt(offspring.getWidth());
 					y = rand.nextInt(offspring.getHeight());
 				}
-				y = findReasonableHeight(offspring, x, y);
+				y = findReasonableHeight(offspring, x, y, 5);
 				offspring.setBlock(x, y, COIN);
 				break;
 			}
@@ -326,7 +328,7 @@ public class GeneticAlgorithm
 				int y = rand.nextInt(offspring.getHeight());
 				if(offspring.getBlock(x, y)==0)
 				{	
-					y = findReasonableHeight(offspring, x, y);
+					y = findReasonableHeight(offspring, x, y, 3);
 					offspring.setSpriteTemplate(x, y, new SpriteTemplate(SpriteTemplate.GOOMPA, false));
 				}
 				break;
@@ -341,18 +343,20 @@ public class GeneticAlgorithm
 			case(4):
 			{
 				// Take a look at myLevel.java build hill straight private function
-//				int chance = rand.nextInt(100);
-//				if(chance == 0)
-//				{
-//					int x = rand.nextInt(offspring.getWidth());
-//					offspring = buildHillStraight(x, 10, offspring);
-//				}
+				int chance = rand.nextInt(20);
+				if(chance == 0)
+				{
+					int x = rand.nextInt(offspring.getWidth());
+					//int range = 7 + rand.nextInt(13);
+					offspring = buildHillStraight(x, 20, offspring);
+				}
 				break;
 			}
 			//Remove Hills
 			case(5):
 			{
-				
+				// Remember, sometimes you may not every have a hill
+				//offspring = removeHill(offspring);
 				break;
 			}
 			//Add Pipes
@@ -385,13 +389,13 @@ public class GeneticAlgorithm
 	}
 	
 	
-	private int findReasonableHeight(MyLevel level, int x, int y)
+	private int findReasonableHeight(MyLevel level, int x, int y, int range)
 	{
 		Random rand = new Random();
 		int yy = y;
 		int h = level.getHeight();
 		while(level.getBlock(x, yy) == 0 && yy++ < h);
-		return ((yy-1) - rand.nextInt(5));
+		return ((yy-1) - rand.nextInt(range));
 	}
 	
 	
@@ -471,11 +475,85 @@ public class GeneticAlgorithm
                 }
             }
         }
-
+        
+        for(int i = 0; i < length; i++)
+        {
+        	level.setBlock(xo+i, floor, GRASS);
+        }
+        
        return level; // return length;
     }
 
-	
+	private MyLevel removeHill(MyLevel level)
+	{
+		// Give a number of tries to find a HILL_TOP_LEFT
+		int tries = 1000;
+		boolean found = false;
+		int x = 0;
+		int y = 0;
+		while(tries > 0 && !found)
+		{
+			x = globalRand.nextInt(level.getWidth());
+			y = globalRand.nextInt(level.getHeight());
+			if(level.getBlock(x, y) == HILL_TOP_LEFT)
+			{
+				found = true;
+			}
+			tries--;
+		}
+		if(tries <= 0)
+		{
+			return level;
+		}
+		int width = 1;
+		int maxWidth = 15;
+		while(width < maxWidth)
+		{
+			if(level.getBlock(x+width+1, y) == (byte)0)
+			{
+				width++;
+				break;
+			}
+			else
+			{
+				width++;
+			}
+		}
+		if(width >= maxWidth)
+		{
+			return level;
+		}
+		int height = 1;
+		int maxHeight = 15;
+		while(height < maxHeight)
+		{
+			if(level.getBlock(x, y+height+1) == GRASS)
+			{
+				height++;
+				break;
+			}
+			else
+			{
+				height++;
+			}
+		}
+		if(height >= maxHeight)
+		{
+			return level;
+		}
+		
+		// Now that we have the width and height, set the blocks to air
+		for(int i = 0; i < width; i++)
+		{
+			for(int j = 0; j < height; j++)
+			{
+				level.setBlock(x+i, y+j, (byte)0);
+			}
+		}
+		
+		System.out.println("Success!");
+		return level;
+	}
 	
 	
 	
