@@ -369,7 +369,7 @@ public class GeneticAlgorithm
 					int x = rand.nextInt(offspring.getWidth());
 					int y = rand.nextInt(offspring.getHeight());
 					if(offspring.getBlock(x, y) == GRASS)
-						test = buildTubes(x, y-1, offspring);
+						test = buildPipe(x, y-1, offspring);
 					count++;
 					if(count > 100) break;
 				} while(!test);
@@ -651,7 +651,7 @@ public class GeneticAlgorithm
 		level.setSpriteTemplate(loc[0], loc[1], null);
 	}
 	
-	private boolean buildTubes(int x, int y, MyLevel level)
+	private boolean buildPipe(int x, int y, MyLevel level)
     {
 		Random rand = new Random();
 		int pipeHeight = 2 + rand.nextInt(3);
