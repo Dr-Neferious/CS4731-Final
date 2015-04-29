@@ -1,3 +1,8 @@
+/*
+ * @author Richard Chaussee and Clayton Pierce
+ * This is a genetic algorithm to generate Mario levels based off of player models.
+ */
+
 package dk.itu.mario.level.generator;
 
 import java.util.ArrayList;
@@ -12,12 +17,6 @@ import dk.itu.mario.level.MyLevel;
 
 public class GeneticAlgorithm 
 {
-	//		    Coins Jumps Goombas
-	//Hunter     3    20     5
-	//Collector  35   55     0
-	//Jumper     0    124    0
-	
-	
 	private static final int NORMAL_POPULATION = 10;
 	private static final int MAX_POPULATION = 50;
 	private static final double THRESHOLD = 0.00005;
@@ -122,17 +121,6 @@ public class GeneticAlgorithm
 		for(int i=NORMAL_POPULATION;i<population.size()-NORMAL_POPULATION;i++)
 			population.remove(i);
 		
-//		population.trimToSize();
-//		System.out.println(population.get(0).fitness + " " + population.get(population.size()-1).fitness);
-//		population.add(bestLevel);
-//		System.out.print(population.get(0).fitness);
-//		System.out.print(" ");
-//		System.out.print(Arrays.toString(countElements(population.get(0))));
-//		System.out.print(" ");
-//		System.out.print(bestLevel.fitness);
-//		System.out.print(" ");
-//		System.out.println(Arrays.toString(countElements(bestLevel)));
-		
 		if(population.get(0).fitness>bestLevel.fitness)
 			bestLevel = population.get(0).cloneMyLevel();
 		bestLevel.fitness = Fitness(bestLevel);
@@ -140,15 +128,16 @@ public class GeneticAlgorithm
 	
 	public boolean isDone()
 	{
-//		return this.deltaError<THRESHOLD || this.interationCount>MAX_ITERATIONS;
 		return this.interationCount>MAX_ITERATIONS;
 	}
 	
 	public Level getLevel()
 	{
-		System.out.print(bestLevel.fitness);
-		System.out.print(" ");
-		System.out.println(Arrays.toString(countElements(bestLevel)));
+		int[] array = countElements(bestLevel);
+		System.out.println("Fitness rating: " + bestLevel.fitness);
+		System.out.println("Number of coins: " + array[0]);
+		System.out.println("Number of jumps: " + array[1]);
+		System.out.println("Number of goombas: " + array[2]);
 		return bestLevel;
 	}
 	
@@ -321,7 +310,7 @@ public class GeneticAlgorithm
 				if(chance == 0)
 				{
 					int x = rand.nextInt(offspring.getWidth());
-					offspring = buildHillStraight(x, 20, offspring);
+					offspring = buildHillStraight(x, 20, offspring, 0);
 				}
 				break;
 			}
@@ -370,27 +359,32 @@ public class GeneticAlgorithm
 		return ((yy-1) - rand.nextInt(range));
 	}
 	
-	private MyLevel buildHillStraight(int xo, int maxLength, MyLevel level)
+	private MyLevel buildHillStraight(int xo, int maxLength, MyLevel level, int count)
     {
+		if(count > 100)
+			return level;
 		Random random = new Random();
         int length = random.nextInt(10) + 10;
         if (length > maxLength) length = maxLength;
-
-        int floor = level.getHeight() - 1 - random.nextInt(4);
-        for (int x = xo; x < xo + length; x++)
+        int grassHeight = 0;
+        for(int y = 0; y < level.getHeight(); y++)
         {
-            for (int y = 0; y < level.getHeight(); y++)
-            {
-                if (y >= floor)
-                {
-                    level.setBlock(x, y, GROUND);
-                }
-            }
+        	if(level.getBlock(xo, y) == GRASS)
+        	{
+        		grassHeight = y;
+        		break;
+        	}
         }
-
-        //level.addEnemyLine(xo + 1, xo + length - 1, floor - 1);
-
-        int h = floor;
+        for(int x = xo; x < length+xo; x++)
+        {
+        	if(level.getBlock(x,grassHeight) != GRASS)
+        	{
+        		int newX = random.nextInt(level.getWidth());
+        		return buildHillStraight(newX, maxLength, level, ++count);
+        	}
+        }
+        
+        int h = grassHeight;
 
         boolean keepGoing = true;
 
@@ -416,15 +410,13 @@ public class GeneticAlgorithm
                 {
                     occupied[xxo - xo] = true;
                     occupied[xxo - xo + l] = true;
-                    //addEnemyLine(xxo, xxo + l, h - 1);
                     if (random.nextInt(4) == 0)
                     {
-                        //decorate(xxo - 1, xxo + l + 1, h);
                         keepGoing = false;
                     }
                     for (int x = xxo; x < xxo + l; x++)
                     {
-                        for (int y = h; y < floor; y++)
+                        for (int y = h; y < grassHeight; y++)
                         {
                             int xx = 5;
                             if (x == xxo) xx = 4;
@@ -447,12 +439,7 @@ public class GeneticAlgorithm
             }
         }
         
-        for(int i = 0; i < length; i++)
-        {
-        	level.setBlock(xo+i, floor, GRASS);
-        }
-        
-       return level; // return length;
+       return level; 
     }
 
 	private MyLevel removeHill(MyLevel level)
@@ -524,8 +511,6 @@ public class GeneticAlgorithm
 				level.setBlock(x+i, y+j, (byte)0);
 			}
 		}
-		
-		//System.out.println("Success!");
 		return level;
 	}
 	
